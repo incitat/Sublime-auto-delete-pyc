@@ -23,6 +23,5 @@ class DeletePycListener(sublime_plugin.EventListener):
             if is_python_file(view):
                 if view.file_name():
                     unlink_pyc(os.path.dirname(view.file_name()))
-                    #ThreadProgress(unlink_thread(), callback=None)
         except Exception, e:
             sublime.message_dialog(str(e))
