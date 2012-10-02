@@ -1,8 +1,5 @@
 import sublime
 import sublime_plugin
-from sublime_thread import sublime_thread
-from shell import shell
-
 import os
 import re
 
@@ -20,19 +17,12 @@ def unlink_pyc(dirname="."):
                     os.unlink(os.path.join(root, f))
 
 
-class unlink_thread(sublime_thread):
-    def run(self):
-        try:
-            self.status = "delete .pyc files"
-            unlink_pyc()
-        except Exception, e:
-            self.exception = str(e)
-
-
 class DeletePycListener(sublime_plugin.EventListener):
     def on_pre_save(self, view):
-        if is_python_file(view):
-            if self.view.file_name():
-                unlink_pyc(os.path.dirname(self.view.file_name()))
-                if view.file_name() is not None:
-                    ThreadProgress(unlink_thread(), callback=None)
+        try:
+            if is_python_file(view):
+                if view.file_name():
+                    unlink_pyc(os.path.dirname(view.file_name()))
+                    #ThreadProgress(unlink_thread(), callback=None)
+        except Exception, e:
+            sublime.message_dialog(str(e))
