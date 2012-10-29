@@ -20,8 +20,7 @@ def unlink_pyc(dirname="."):
 class DeletePycListener(sublime_plugin.EventListener):
     def on_pre_save(self, view):
         try:
-            if is_python_file(view):
-                if view.file_name():
-                    unlink_pyc(os.path.dirname(view.file_name()))
+            for dirname in sublime.active_window().folders():
+                unlink_pyc(dirname)
         except Exception, e:
             sublime.message_dialog(str(e))
