@@ -1,30 +1,31 @@
-from sublime import active_window,error_message
+from os.path import relpath
+from platform import python_version
+from sys import exc_info
+from sublime import active_window,error_message,packages_path
 import sublime_plugin
-from os import walk,unlink
-from os.path import join,splitext
 try:
-    from sublime_helper import thread
-except ImportError:
-    from platform import python_version
-    error_message("""sublime_helper ImportError
-pip-%s install sublime_helper""" % python_version()[0:3])
-except Exception,e:
-    error_message(str(e))
+    import dir
+    import sublime_helper
+except Exception, e:
+    package = relpath(__file__,packages_path())
+    line = exc_info()[2].tb_lineno
+    error_message("""python%s\n%s
+line %s:\n
+%s:\n%s""" % (
+    python_version(), package, line,
+    type(e), str(e)
+    ))
 
 def unlink_pyc(dirname):
-    for root, dirs, files in walk(dirname):
-        for f in files:
-            fileName, fileExtension = splitext(f)
-            if fileExtension == ".pyc":
-                if f[0:-1] not in files:
-                    unlink(join(root, f))
+    for file in dir.files(dirname,tree=True,filter="*.pyc"):
+        dir.unlink(file)
 
 
 class DeletePycListener(sublime_plugin.EventListener):
     def on_pre_save(self, view):
         try:
             for dirname in active_window().folders():
-                thread(
+                sublime_helper.thread(
                     lambda:unlink_pyc(dirname),
                     status="search standalone .pyc"
                 )
